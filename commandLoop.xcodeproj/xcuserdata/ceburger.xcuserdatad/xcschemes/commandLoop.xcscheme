@@ -57,6 +57,12 @@
             ReferencedContainer = "container:commandLoop.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <CommandLineArguments>
+         <CommandLineArgument
+            argument = "-p &quot;../data/progressTest.txt&quot; -o &quot;../data/outputtest.csv&quot; -i &quot;../data/160 Greatest Arnold Schwarzenegger Quotes.mp4&quot;"
+            isEnabled = "YES">
+         </CommandLineArgument>
+      </CommandLineArguments>
       <AdditionalOptions>
       </AdditionalOptions>
    </LaunchAction>
