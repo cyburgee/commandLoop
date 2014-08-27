@@ -24,6 +24,7 @@ bool checkForLoop();
 bool hasMovement(Mat start, Scalar startMean, float startSum, int potentialEndIdx);
 void getBestLoop(Mat start,Scalar startMean,float startSum);
 bool ditchSimilarLoop();
+void saveGifs();
 
 VideoCapture vid;
 
@@ -45,6 +46,8 @@ CvSize imResize;
 
 vector<array<int, 2>> loopEnds;
 vector<Mat> frameBuffer;
+vector<Mat> fullFrameBuffer;
+vector<vector<Mat>> potentialGifs;
 vector<float> loopRatings;
 vector<int> matchIndeces;
 vector<Mat> bestMatches;

@@ -75,14 +75,14 @@ int main(int argc, const char * argv[])
     cout << "num frames: " << numFrames << endl;
     cout << "fps: " << fps << endl;
     
-    minMovementThresh = 1;
+    minMovementThresh = 3;
     minMovementBool = true;
-    maxMovementThresh = 20;
+    maxMovementThresh = 15;
     maxMovementBool = false;
     loopThresh = 85.0;
     minChangeRatio = FLT_MAX;
     minPeriodSecs = 1.0;
-    maxPeriodSecs = 5.0;
+    maxPeriodSecs = 3.0;
     
     maxPeriodFrames = fps*maxPeriodSecs;
     minPeriodFrames = fps*minPeriodSecs;
@@ -95,10 +95,12 @@ int main(int argc, const char * argv[])
     for (frameStartIdx = 0; frameStartIdx <= ceil(numFrames) - maxPeriodFrames; frameStartIdx++){
         checkForLoop();
         frameBuffer.erase(frameBuffer.begin());
+        fullFrameBuffer.erase(fullFrameBuffer.begin());
         Mat currFrame,currGray, smallGray;
         while (!vid.read(currFrame))
             cout << "couldn't get next frame" << endl;
         
+        fullFrameBuffer.push_back(currFrame);
         cvtColor(currFrame, currGray, CV_RGB2GRAY);
         resize(currGray, smallGray, imResize,INTER_AREA);
         frameBuffer.push_back(smallGray);
@@ -131,9 +133,13 @@ int main(int argc, const char * argv[])
     
     outputOne.close();
     
+    
+    saveGifs();
+    
     vid.release();
     loopEnds.clear();
     frameBuffer.clear();
+    fullFrameBuffer.clear();
     loopRatings.clear();
     //matchIndeces.clear();
     //bestMatches.clear();
@@ -157,6 +163,7 @@ void initFrameBuffer(){
         while (!vid.read(currFrame))
             cout << "couldn't get next frame" << endl;
         
+        fullFrameBuffer.push_back(currFrame);
         cvtColor(currFrame, currGray, CV_RGB2GRAY);
         resize(currGray, smallGray, imResize,INTER_AREA);
         frameBuffer.push_back(smallGray);
@@ -302,6 +309,13 @@ void getBestLoop(Mat start,Scalar startMean,float startSum){
         
         loopRatings.push_back(minChange);
         loopStartMats.push_back(start);
+        
+        vector<Mat> potGif;
+        for (int i = 0; i < matchIndeces.at(bestEnd); i++) {
+            potGif.push_back(fullFrameBuffer.at(i));
+        }
+        potentialGifs.push_back(potGif);
+        
         ditchSimilarLoop();
     }
     
@@ -343,6 +357,9 @@ bool ditchSimilarLoop(){
             //displayLoops.erase(displayLoops.end() - 1);
             loopEnds.erase(loopEnds.end() - 1);
             loopStartMats.erase(loopStartMats.end() - 1);
+            
+            potentialGifs.at(potentialGifs.size() -1).clear();
+            potentialGifs.erase(potentialGifs.end() -1);
         }
         else{
             cout << "erasing second to last" << endl;
@@ -355,10 +372,29 @@ bool ditchSimilarLoop(){
             }
             displayLoops.erase(displayLoops.end() - 2);*/
             loopEnds.erase(loopEnds.end() - 2);
-            loopStartMats.erase(loopStartMats.end() - 2);
+            
+            potentialGifs.at(potentialGifs.size() - 2).clear();
+            potentialGifs.erase(potentialGifs.end() - 2);
         }
         return true;
     }
     return false;
+}
+
+//------------------------------------------------------------------------------------
+void saveGifs(){
+    for (int i =0; i < potentialGifs.size(); i++) {
+        for (int j = 0; j < potentialGifs.at(i).size(); j++) {
+            stringstream imageName;
+            imageName << "../data/loop_" << i << "_" << j << ".jpg";
+            string filename = imageName.str();
+            imwrite(filename.c_str(), potentialGifs.at(i).at(j));
+        }
+    }
+    //clear everything
+    for (int i = 0; i < potentialGifs.size(); i++) {
+        potentialGifs.at(i).clear();
+    }
+    potentialGifs.clear();
 }
 
