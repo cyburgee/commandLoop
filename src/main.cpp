@@ -24,9 +24,9 @@ int main(int argc, const char * argv[])
     ofstream progress;
     po::options_description desc("Allowed options");
     desc.add_options()
-    ("help", "produce help message")
-    ("input,i",po::value<std::string>(&fileInString)->required(), "path and filename of desired input video")
-    ("output,o", po::value<std::string>(&fileOutString)->required(), "path and filename of desired output file. it will be comma separated")
+    ("help,h", "produce help message")
+    ("input,i",po::value<std::string>(&fileInString), "path and filename of desired input video")
+    ("output,o", po::value<std::string>(&fileOutString), "path and filename of desired output file. it will be comma separated")
     ("progress,p", po::value<std::string>(&fileProgressString), "path and filename of processing progress indicator")
     
     ;
@@ -49,19 +49,17 @@ int main(int argc, const char * argv[])
     }
     
     if (vm.count("output")) {
-        cout << "Output file: "
-        << vm["output"].as<std::string>() << ".\n";
+        //cout << "Output file: " << vm["output"].as<std::string>() << ".\n";
     } else {
-        cout << "Output file was not set.\n";
+        //cout << "Output file was not set.\n";
         return -1;
     }
     
     if (vm.count("progress")) {
-        cout << "Progress file: "
-        << vm["output"].as<std::string>() << ".\n";
+        //cout << "Progress file: " << vm["progress"].as<std::string>() << ".\n";
         progress.open(fileProgressString,ofstream::out);
     } else {
-        cout << "Progress file was not set.\n";
+        //cout << "Progress file was not set.\n";
         return -1;
     }
     
@@ -72,8 +70,8 @@ int main(int argc, const char * argv[])
     //string fileString(argv[1]);
     double numFrames = vid.get(CV_CAP_PROP_FRAME_COUNT);
     double fps = vid.get(CV_CAP_PROP_FPS);
-    cout << "num frames: " << numFrames << endl;
-    cout << "fps: " << fps << endl;
+    //cout << "num frames: " << numFrames << endl;
+    //cout << "fps: " << fps << endl;
     
     minMovementThresh = 3;
     minMovementBool = true;
@@ -95,19 +93,20 @@ int main(int argc, const char * argv[])
     for (frameStartIdx = 0; frameStartIdx <= ceil(numFrames) - maxPeriodFrames; frameStartIdx++){
         checkForLoop();
         frameBuffer.erase(frameBuffer.begin());
-        fullFrameBuffer.erase(fullFrameBuffer.begin());
+        //fullFrameBuffer.erase(fullFrameBuffer.begin());
         Mat currFrame,currGray, smallGray;
         while (!vid.read(currFrame))
-            cout << "couldn't get next frame" << endl;
+            cerr << "couldn't get next frame" << endl;
+            //cout << "couldn't get next frame" << endl;
         
-        fullFrameBuffer.push_back(currFrame);
-        cvtColor(currFrame, currGray, CV_RGB2GRAY);
+        //fullFrameBuffer.push_back(currFrame);
+        cvtColor(currFrame, currGray, CV_YUV2GRAY_420);//CV_RGB2GRAY);
         resize(currGray, smallGray, imResize,INTER_AREA);
         frameBuffer.push_back(smallGray);
         //cout << "frameStart: " << frameStartIdx << endl;
         if (showProgress && frameStartIdx%100 == 0) {
             progress << (int)(frameStartIdx/numFrames*100) << "% done" << endl;
-            cout << (int)(frameStartIdx/numFrames*100) << "% done" << endl;
+            //cout << (int)(frameStartIdx/numFrames*100) << "% done" << endl;
         }
         
     }
@@ -125,7 +124,7 @@ int main(int argc, const char * argv[])
     //outputOne.open(fileOutOne,ofstream::out);
     outputOne.open(fileOutString,ofstream::out);
     if (outputOne.is_open()) {
-        cout << "Output Good" << endl;
+        //cout << "Output Good" << endl;
         for (int i = 0; i < loopEnds.size(); i++) {
             outputOne << loopEnds.at(i)[0] << "," <<  loopEnds.at(i)[1] << endl;
         }
@@ -134,12 +133,12 @@ int main(int argc, const char * argv[])
     outputOne.close();
     
     
-    saveGifs();
+    //saveGifs();
     
     vid.release();
     loopEnds.clear();
     frameBuffer.clear();
-    fullFrameBuffer.clear();
+    //fullFrameBuffer.clear();
     loopRatings.clear();
     //matchIndeces.clear();
     //bestMatches.clear();
@@ -161,10 +160,11 @@ void initFrameBuffer(){
     for (int i = 0; i < maxPeriodFrames; i++) {
         
         while (!vid.read(currFrame))
-            cout << "couldn't get next frame" << endl;
+            cerr << "couldn't get next frame" << endl;
+        //    cout << "couldn't get next frame" << endl;
         
-        fullFrameBuffer.push_back(currFrame);
-        cvtColor(currFrame, currGray, CV_RGB2GRAY);
+        //fullFrameBuffer.push_back(currFrame);
+        cvtColor(currFrame, currGray, CV_YUV2GRAY_420);//CV_RGB2GRAY);
         resize(currGray, smallGray, imResize,INTER_AREA);
         frameBuffer.push_back(smallGray);
         
@@ -261,19 +261,19 @@ bool hasMovement(Mat start, Scalar startMean, float startSum, int potentialEndId
     
     if (minMovementBool) {
         if(sumDiff < minMovementThresh/100 ){
-            cout << "not enough movement" << endl;
+            //cout << "not enough movement" << endl;
             return false;
         }
     }
     else if (maxMovementBool){
         if(sumDiff > maxMovementThresh/100 ){
-            cout << "too much movement" << endl;
+            //cout << "too much movement" << endl;
             return false;
         }
     }
     else if (minMovementBool && maxMovementBool){
         if(sumDiff > maxMovementThresh/100 && sumDiff < minMovementThresh/100){
-            cout << "not enough movement or too much" << endl;
+            //cout << "not enough movement or too much" << endl;
             return false;
         }
     }
@@ -310,11 +310,11 @@ void getBestLoop(Mat start,Scalar startMean,float startSum){
         loopRatings.push_back(minChange);
         loopStartMats.push_back(start);
         
-        vector<Mat> potGif;
-        for (int i = 0; i < matchIndeces.at(bestEnd); i++) {
+        //vector<Mat> potGif;
+        /*for (int i = 0; i < matchIndeces.at(bestEnd); i++) {
             potGif.push_back(fullFrameBuffer.at(i));
-        }
-        potentialGifs.push_back(potGif);
+        }*/
+        //potentialGifs.push_back(potGif);
         
         ditchSimilarLoop();
     }
@@ -346,55 +346,24 @@ bool ditchSimilarLoop(){
     if((changeRatio*100) <= (100-loopThresh)){ // the first frames are very similar
         
         if (loopRatings.at(loopRatings.size() - 2) < loopRatings.at(loopRatings.size() -1)) {
-            cout << "erasing last one" << endl;
+            //cout << "erasing last one" << endl;
             loopRatings.erase(loopRatings.end() - 1);
-            //loopLengths.erase(loopLengths.end() - 1);
-            //loopPlayIdx.erase(loopPlayIdx.end() - 1);
-            //vector<ofImage *> disp = displayLoops.at(displayLoops.size() - 1);
-            /*for (std::vector<ofImage *>::iterator i = disp.begin(); i != disp.end(); ++i){
-                delete *i;
-            }*/
-            //displayLoops.erase(displayLoops.end() - 1);
             loopEnds.erase(loopEnds.end() - 1);
             loopStartMats.erase(loopStartMats.end() - 1);
             
-            potentialGifs.at(potentialGifs.size() -1).clear();
-            potentialGifs.erase(potentialGifs.end() -1);
+            //potentialGifs.at(potentialGifs.size() -1).clear();
+            //potentialGifs.erase(potentialGifs.end() -1);
         }
         else{
-            cout << "erasing second to last" << endl;
+            //cout << "erasing second to last" << endl;
             loopRatings.erase(loopRatings.end() - 2 );
-            //loopLengths.erase(loopLengths.end() - 2);
-            //loopPlayIdx.erase(loopPlayIdx.end() - 2);
-            /*vector<ofImage *> disp = displayLoops.at(displayLoops.size() - 2);
-            for (std::vector<ofImage *>::iterator i = disp.begin(); i != disp.end(); ++i){
-                delete *i;
-            }
-            displayLoops.erase(displayLoops.end() - 2);*/
             loopEnds.erase(loopEnds.end() - 2);
             
-            potentialGifs.at(potentialGifs.size() - 2).clear();
-            potentialGifs.erase(potentialGifs.end() - 2);
+            //potentialGifs.at(potentialGifs.size() - 2).clear();
+            //potentialGifs.erase(potentialGifs.end() - 2);
         }
         return true;
     }
     return false;
-}
-
-//------------------------------------------------------------------------------------
-void saveGifs(){
-    for (int i =0; i < potentialGifs.size(); i++) {
-        for (int j = 0; j < potentialGifs.at(i).size(); j++) {
-            stringstream imageName;
-            imageName << "../data/loop_" << i << "_" << j << ".jpg";
-            string filename = imageName.str();
-            imwrite(filename.c_str(), potentialGifs.at(i).at(j));
-        }
-    }
-    //clear everything
-    for (int i = 0; i < potentialGifs.size(); i++) {
-        potentialGifs.at(i).clear();
-    }
-    potentialGifs.clear();
 }
 
