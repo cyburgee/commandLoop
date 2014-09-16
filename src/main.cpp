@@ -366,4 +366,3 @@ bool ditchSimilarLoop(){
     }
     return false;
 }
-
