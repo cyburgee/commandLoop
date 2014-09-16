@@ -1,6 +1,4 @@
 
-bin/data/progressTest.txt
+bin*
 
-bin/data/progressTest.txt
-
-bin/data/progressTest.txt
+*.dylib
