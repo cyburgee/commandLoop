@@ -8,7 +8,6 @@
 
 #include "main.h"
 
-
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 
@@ -70,8 +69,8 @@ int main(int argc, const char * argv[])
     //string fileString(argv[1]);
     double numFrames = vid.get(CV_CAP_PROP_FRAME_COUNT);
     double fps = vid.get(CV_CAP_PROP_FPS);
-    //cout << "num frames: " << numFrames << endl;
-    //cout << "fps: " << fps << endl;
+    cout << "num frames: " << numFrames << endl;
+    cout << "fps: " << fps << endl;
     
     minMovementThresh = 3;
     minMovementBool = true;
@@ -95,21 +94,24 @@ int main(int argc, const char * argv[])
         frameBuffer.erase(frameBuffer.begin());
         //fullFrameBuffer.erase(fullFrameBuffer.begin());
         Mat currFrame,currGray, smallGray;
-        while (!vid.read(currFrame))
+        if (!vid.read(currFrame)){
             cerr << "couldn't get next frame" << endl;
-            //cout << "couldn't get next frame" << endl;
+            goto end_read;
+        }
+        //cout << "couldn't get next frame" << endl;
         
         //fullFrameBuffer.push_back(currFrame);
-        cvtColor(currFrame, currGray, CV_YUV2GRAY_420);//CV_RGB2GRAY);
+        cvtColor(currFrame, currGray, CV_RGB2GRAY);//CV_YUV2GRAY_420);//CV_RGB2GRAY);
         resize(currGray, smallGray, imResize,INTER_AREA);
         frameBuffer.push_back(smallGray);
         //cout << "frameStart: " << frameStartIdx << endl;
         if (showProgress && frameStartIdx%100 == 0) {
-            progress << (int)(frameStartIdx/numFrames*100) << "% done" << endl;
+            progress << (int)(frameStartIdx/(numFrames-maxPeriodFrames)*100) << "% done" << endl;
             //cout << (int)(frameStartIdx/numFrames*100) << "% done" << endl;
         }
         
     }
+    end_read:
     
     if(showProgress){
         progress << 100 << "% done" << endl;
@@ -234,7 +236,7 @@ bool checkForLoop(){
     }
     
     return false;
-
+    
     
 }
 
@@ -282,7 +284,7 @@ bool hasMovement(Mat start, Scalar startMean, float startSum, int potentialEndId
 }
 
 void getBestLoop(Mat start,Scalar startMean,float startSum){
-    float minChange = MAXFLOAT;
+    float minChange = FLT_MAX;//MAXFLOAT;
     int bestEnd = -1;
     //float startSum = cv::sum(start)[0] + 1; //add one to get rid of division by 0 if screen is black
     
@@ -312,8 +314,8 @@ void getBestLoop(Mat start,Scalar startMean,float startSum){
         
         //vector<Mat> potGif;
         /*for (int i = 0; i < matchIndeces.at(bestEnd); i++) {
-            potGif.push_back(fullFrameBuffer.at(i));
-        }*/
+         potGif.push_back(fullFrameBuffer.at(i));
+         }*/
         //potentialGifs.push_back(potGif);
         
         ditchSimilarLoop();
@@ -366,3 +368,4 @@ bool ditchSimilarLoop(){
     }
     return false;
 }
+
