@@ -59,7 +59,7 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "-p &quot;../data/progressTest.txt&quot; -o &quot;../data/outputtest.csv&quot; -i &quot;../data/160 Greatest Arnold Schwarzenegger Quotes.mp4&quot;"
+            argument = "-p &quot;../data/progressTest.txt&quot; -o &quot;/tmp/outputtest.csv&quot; -i &quot;../data/160 Greatest Arnold Schwarzenegger Quotes.mp4&quot;"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>

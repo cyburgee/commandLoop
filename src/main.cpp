@@ -161,16 +161,19 @@ void initFrameBuffer(){
     
     for (int i = 0; i < maxPeriodFrames; i++) {
         
-        while (!vid.read(currFrame))
+        if (!vid.read(currFrame)){
             cerr << "couldn't get next frame" << endl;
+            goto end_buffer_read;
         //    cout << "couldn't get next frame" << endl;
-        
+        }
         //fullFrameBuffer.push_back(currFrame);
         cvtColor(currFrame, currGray, CV_YUV2GRAY_420);//CV_RGB2GRAY);
         resize(currGray, smallGray, imResize,INTER_AREA);
         frameBuffer.push_back(smallGray);
         
     }
+    end_buffer_read:
+    return;
 }
 
 
@@ -261,7 +264,13 @@ bool hasMovement(Mat start, Scalar startMean, float startSum, int potentialEndId
     //cout << "sum Diff: " << sumDiff << endl;
     //cout << "minThreshold: " << minMovementThresh*(potentialEndIdx - frameStart)/100 << endl;
     
-    if (minMovementBool) {
+    if (minMovementBool && maxMovementBool){
+        if(sumDiff > maxMovementThresh/100 && sumDiff < minMovementThresh/100){
+            //cout << "not enough movement or too much" << endl;
+            return false;
+        }
+    }
+    else if (minMovementBool) {
         if(sumDiff < minMovementThresh/100 ){
             //cout << "not enough movement" << endl;
             return false;
@@ -270,12 +279,6 @@ bool hasMovement(Mat start, Scalar startMean, float startSum, int potentialEndId
     else if (maxMovementBool){
         if(sumDiff > maxMovementThresh/100 ){
             //cout << "too much movement" << endl;
-            return false;
-        }
-    }
-    else if (minMovementBool && maxMovementBool){
-        if(sumDiff > maxMovementThresh/100 && sumDiff < minMovementThresh/100){
-            //cout << "not enough movement or too much" << endl;
             return false;
         }
     }
